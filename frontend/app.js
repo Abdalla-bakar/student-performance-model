@@ -1,35 +1,45 @@
-// Backend is a separate Render Web Service — must use its full URL
 const API_URL = 'https://student-performance-model-s23t.onrender.com/predict';
-
+ 
 let extraValue = 'Yes';
-
+ 
 function setExtra(val) {
   extraValue = val;
   document.getElementById('btn-yes').classList.toggle('active', val === 'Yes');
   document.getElementById('btn-no').classList.toggle('active', val === 'No');
 }
-
+ 
 async function predict() {
-  const hours  = parseInt(document.getElementById('hours').value);
-  const scores = parseInt(document.getElementById('scores').value);
-  const sleep  = parseInt(document.getElementById('sleep').value);
-  const papers = parseInt(document.getElementById('papers').value);
+  const hoursRaw  = document.getElementById('hours').value;
+  const scoresRaw = document.getElementById('scores').value;
+  const sleepRaw  = document.getElementById('sleep').value;
+  const papersRaw = document.getElementById('papers').value;
+ 
+  const hours  = parseInt(hoursRaw);
+  const scores = parseInt(scoresRaw);
+  const sleep  = parseInt(sleepRaw);
+  const papers = parseInt(papersRaw);
+ 
   const btn    = document.getElementById('predictBtn');
   const result = document.getElementById('result');
-
-  if (!hours || !scores || !sleep || isNaN(papers)) {
+ 
+  // BUG FIX: use .trim() === '' to check empty, NOT falsy check
+  // because !papers would block papers=0 which is a valid value
+  if (hoursRaw.trim() === '' || scoresRaw.trim() === '' || sleepRaw.trim() === '' || papersRaw.trim() === '') {
     showError('Please fill in all fields.'); return;
+  }
+  if (isNaN(hours) || isNaN(scores) || isNaN(sleep) || isNaN(papers)) {
+    showError('Please enter valid numbers.'); return;
   }
   if (hours < 1 || hours > 9)     { showError('Hours studied must be 1–9.'); return; }
   if (scores < 40 || scores > 99) { showError('Previous score must be 40–99.'); return; }
   if (sleep < 4 || sleep > 9)     { showError('Sleep hours must be 4–9.'); return; }
   if (papers < 0 || papers > 9)   { showError('Papers practiced must be 0–9.'); return; }
-
+ 
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Predicting...';
   result.className = 'result';
   result.style.display = 'none';
-
+ 
   try {
     const res = await fetch(API_URL, {
       method: 'POST',
@@ -42,24 +52,28 @@ async function predict() {
         sample_question_papers_practiced: papers
       })
     });
-
-    if (!res.ok) throw new Error('API error: ' + res.status);
+ 
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || 'API error: ' + res.status);
+    }
     const data = await res.json();
     showSuccess(data);
-
+ 
   } catch (err) {
-    showError('Connection failed. Make sure the API is running.<br/><small>' + err.message + '</small>');
+    showError('Request failed: ' + err.message);
   } finally {
     btn.disabled = false;
     btn.innerHTML = 'Predict Performance →';
   }
 }
-
+ 
 function showSuccess(data) {
   const result = document.getElementById('result');
   const pct = Math.min(100, Math.max(0, data.performance_index));
-
+ 
   result.className = 'result success show';
+  result.style.display = '';
   result.innerHTML = `
     <div class="grade-badge">${data.grade}</div>
     <div class="score-label">Performance Index</div>
@@ -69,15 +83,16 @@ function showSuccess(data) {
       <div class="progress-bar" id="pbar"></div>
     </div>
   `;
-
+ 
   setTimeout(() => {
     const bar = document.getElementById('pbar');
     if (bar) bar.style.width = pct + '%';
   }, 100);
 }
-
+ 
 function showError(msg) {
   const result = document.getElementById('result');
   result.className = 'result error show';
+  result.style.display = '';
   result.innerHTML = `<p class="error-msg">⚠️ ${msg}</p>`;
 }
