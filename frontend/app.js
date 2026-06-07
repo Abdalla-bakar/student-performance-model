@@ -1,5 +1,5 @@
 // Use a relative URL so this works on any domain (Render, custom domain, localhost)
-const API_URL = 'https://student-performance-model-s23t.onrender.com/predict';
+const API_URL = '/predict';
  
 let extraValue = 'Yes';
  
