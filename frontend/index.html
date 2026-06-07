@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Performance Predictor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">AI-Powered Prediction</div>
+      <h1>Student<br/><span>Performance</span><br/>Predictor</h1>
+      <p class="subtitle">Enter your study habits to predict your<br/>academic performance index.</p>
+    </header>
+ 
+    <div class="card">
+ 
+      <div class="field">
+        <label><span class="icon">📚</span> Hours Studied Per Day</label>
+        <input type="number" id="hours" min="1" max="9" placeholder="e.g. 7" />
+        <div class="hint">Range: 1 – 9 hours</div>
+      </div>
+ 
+      <div class="field">
+        <label><span class="icon">📝</span> Previous Exam Score</label>
+        <input type="number" id="scores" min="40" max="99" placeholder="e.g. 75" />
+        <div class="hint">Range: 40 – 99</div>
+      </div>
+ 
+      <div class="field">
+        <label><span class="icon">😴</span> Sleep Hours Per Day</label>
+        <input type="number" id="sleep" min="4" max="9" placeholder="e.g. 8" />
+        <div class="hint">Range: 4 – 9 hours</div>
+      </div>
+ 
+      <div class="field">
+        <label><span class="icon">📄</span> Sample Papers Practiced</label>
+        <input type="number" id="papers" min="0" max="9" placeholder="e.g. 5" />
+        <div class="hint">Range: 0 – 9 papers</div>
+      </div>
+ 
+      <div class="field">
+        <label><span class="icon">🏆</span> Extracurricular Activities</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="btn-yes" onclick="setExtra('Yes')">✅ Yes</button>
+          <button class="toggle-btn" id="btn-no" onclick="setExtra('No')">❌ No</button>
+        </div>
+      </div>
+ 
+      <div class="divider"></div>
+ 
+      <button class="btn-predict" id="predictBtn" onclick="predict()">
+        Predict Performance →
+      </button>
+ 
+      <div class="result" id="result"></div>
+    </div>
+ 
+    <footer>
+      Powered by <a href="/docs" target="_blank">CatBoost API</a>
+      &nbsp;·&nbsp; Made by Abdalla
+    </footer>
+  </div>
+ 
+  <script src="app.js"></script>
+</body>
+</html>
