@@ -1,17 +1,13 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 import pickle
 import numpy as np
 import os
 
-app = FastAPI(
-    title="Student Performance Predictor",
-    description="Predicts student Performance Index using CatBoostRegressor + StandardScaler.",
-    version="1.0.0",
-)
+app = FastAPI(title="Student Performance Predictor", version="1.0.0")
 
+# CORS — allows the frontend static site to call this API from a different domain
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -58,12 +54,17 @@ def to_grade(score: float) -> str:
     return "F"
 
 
-@app.get("/health", tags=["Health"])
+@app.get("/")
+def root():
+    return {"status": "ok", "api": "Student Performance Predictor", "docs": "/docs"}
+
+
+@app.get("/health")
 def health():
-    return {"status": "healthy", "model": "CatBoostRegressor", "scaler": "StandardScaler"}
+    return {"status": "healthy"}
 
 
-@app.post("/predict", response_model=PredictionOut, tags=["Prediction"])
+@app.post("/predict", response_model=PredictionOut)
 def predict(student: StudentInput):
     try:
         extra = 1 if student.extracurricular_activities == "Yes" else 0
@@ -84,27 +85,3 @@ def predict(student: StudentInput):
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# ── Static frontend — MUST be mounted LAST ──
-FRONTEND_DIR = os.path.join(BASE_DIR, "static")
-
-# Debug log visible in Render logs
-print(f"[startup] BASE_DIR       = {BASE_DIR}")
-print(f"[startup] static/ exists = {os.path.isdir(FRONTEND_DIR)}")
-if os.path.isdir(FRONTEND_DIR):
-    print(f"[startup] static/ files  = {os.listdir(FRONTEND_DIR)}")
-else:
-    print("[startup] ERROR: static/ folder missing — build command did not copy frontend!")
-
-if os.path.isdir(FRONTEND_DIR):
-    app.mount("/", StaticFiles(directory=FRONTEND_DIR, html=True), name="static")
-else:
-    @app.get("/", tags=["Debug"])
-    def root():
-        return {
-            "ERROR": "Frontend not found. static/ folder is missing.",
-            "cause": "Build command failed to copy ../frontend/ into backend/static/",
-            "fix": "Check render.yaml buildCommand or set it manually in Render dashboard.",
-            "docs": "/docs",
-        }
